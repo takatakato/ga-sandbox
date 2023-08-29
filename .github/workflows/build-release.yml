@@ -29,15 +29,40 @@ jobs:
               console.log("PR is not mergeable");
               return "false";
             }
-      - name: Get result
-        run: echo "${{steps.check_pr.outputs.result}}"
+      # - name: Get result
+      #   run: |
+      # - name: Check Mergeable
+      #   run: |
+      #     PR_NUMBER=${{ github.event.pull_request.number }}
+      #     GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} # This token is automatically provided by GitHub Actions
+
+      #     # Get PR mergeable status
+      #     PR_MERGEABLE=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
+      #         "https://api.github.com/repos/${{ github.repository }}/pulls/$PR_NUMBER" \
+      #         | jq -r '.mergeable')
+
+      #     if [[ "$PR_MERGEABLE" == "false" ]]; then
+      #       echo "PR is not mergeable."
+      #       exit 1
+      #     else
+      #       echo "PR is mergeable."
+      #     fi
+# echo "${{steps.check_pr.outputs.result}}"
       - name: Check PR state
         run: |
-          if [[ "${{steps.check_pr.outputs.result}}" == "false" ]]; then
-            echo "PR state is false."
+          PR_NUMBER=${{ github.event.pull_request.number }}
+          GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
+
+          # Get PR mergeable status
+          PR_MERGEABLE=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
+              "https://api.github.com/repos/${{ github.repository }}/pulls/$PR_NUMBER" \
+              | jq -r '.mergeable')
+
+          if [[ "$PR_MERGEABLE" == "false" ]]; then
+            echo "PR is not mergeable."
             exit 1
           else
-            echo "PR state is true."
+            echo "PR is mergeable."
           fi
     outputs:
       pr_state: ${{steps.check_pr.outputs.result}}
