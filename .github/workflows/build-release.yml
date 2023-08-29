@@ -1,0 +1,52 @@
+name: Push to ECR
+
+on:
+  pull_request:
+    branches:    
+      - main
+    paths:
+      - container/accounts/test/**
+  # pull_request_review:
+  #   types: [submitted]
+
+jobs:
+  check_mergeable:
+    runs-on: ubuntu-latest
+    steps:  
+      - name: dump context
+        run: echo '${{ toJSON(github) }}'
+      - name: Check PR Mergeable
+        id: check_pr
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            console.log(pr);
+            if (pr.mergeable === 'clean' || pr.mergeable === 'has_hooks') {
+              console.log("PR is mergeable");
+              return "true";
+            } else {
+              console.log("PR is not mergeable");
+              return "false";
+            }
+      - name: Get result
+        run: echo "${{steps.check_pr.outputs.result}}"
+      - name: Check PR state
+        run: |
+          if [[ "${{steps.check_pr.outputs.result}}" == "false" ]]; then
+            echo "PR state is false."
+            exit 1
+          else
+            echo "PR state is true."
+          fi
+    outputs:
+      pr_state: ${{steps.check_pr.outputs.result}}
+
+  build:
+    needs: 
+      - check_mergeable
+    timeout-minutes: 15
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo ${{needs.check_mergeable.outputs.pr_state}}
