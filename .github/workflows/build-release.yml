@@ -25,11 +25,11 @@ jobs:
           PR_MERGEABLE=$(echo "$PR_JSON" | jq -r '.mergeable')
           PR_MERGEABLE_STATE=$(echo "$PR_JSON" | jq -r '.mergeable_state')
           
-          if [[ "$PR_MERGEABLE" == "null" ]] || [[ "$PR_MERGEABLE_STATE" == "blocked" ]]; then
-            echo "PR is not mergeable."
+          if [[ "$PR_MERGEABLE" != "true" ]] || [[ "$PR_MERGEABLE_STATE" == "blocked" ]]; then
+            echo "PR is not mergeable. mergeable: $PR_MERGEABLE, mergeable_state: $PR_MERGEABLE_STATE"
             exit 1
           else
-            echo "PR is mergeable."
+            echo "PR is mergeable. mergeable: $PR_MERGEABLE, mergeable_state: $PR_MERGEABLE_STATE"
           fi
 
   build:
